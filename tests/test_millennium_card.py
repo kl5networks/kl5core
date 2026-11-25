@@ -10,8 +10,6 @@ The layout constants are `offsetof` output from a probe compiled against
 `mm_card.h`, not arithmetic: the Millennium's headers carry at least one
 stale size comment (the MTR headers).
 """
-import os
-import sys
 import unittest
 
 

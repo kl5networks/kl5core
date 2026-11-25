@@ -1,8 +1,9 @@
 # kl5core
 
 Building blocks for a payphone manager: the program a payphone calls to
-report in and be programmed. Pure Python, standard library only, no I/O:
-bytes in, bytes out.
+report in and be programmed. Python, standard library only. Everything
+but `kl5net` is pure, bytes in and bytes out; `kl5net` is the one module
+that opens a socket.
 
 ## What is here
 
@@ -10,6 +11,12 @@ bytes in, bytes out.
 |---|---|
 | `xnetproto` | The Protel XNet link as it appears on the wire: framing and checksums, a decoder for every packet type seen, the call-in, call records (CDR) and the call-record ring, the board's clock, a reader for relay captures, and `ReplayManager`, a state machine that answers a call-in by replaying the manager's side of a recorded session |
 | `protel_firmware_xnet` | Memory-write and read-answer frame details for the Protel 4000/8000 (DD8822) |
+| `protelimage` | Builds a whole Protel download (the memory writes and their checks) from an options record and a costing record |
+| `xnetopts` | The options-and-registers record: every keypad register by number, the codes, polling and reporting flags |
+| `xnetcost` | The call-costing record: rate bands, restricted numbers, speed dials |
+| `protelzones` | The NPA/NXX zone tables: which exchange falls in which cost band |
+| `costtemplates` | Ready-made rate plans to start a costing record from |
+| `kl5net` | KL5-Net, a Protel manager: an asyncio listener that answers a call-in from a softmodem, runs a download script against the board and writes every byte as a capture |
 | `millennium` | Nortel Millennium tables for a download: CARD, RATE, call screening, speed dials, and which a given terminal (MTR 1.x or 2.x) takes |
 
 The Millennium tables are the files [mm_manager](https://github.com/hharte/mm_manager)
@@ -20,16 +27,28 @@ Our fork of mm_manager, with the fixes we run in production, is
 
 ## What is not here
 
-The Protel side stops at the protocol. Building a full Protel download
-(the options, rates and zone tables) is not included. The modems these
-phones call in with are in
+Nothing of ExpressNet, Protel's own manager: no program, no data files,
+no captures. The options and costing records use ExpressNet's record
+layout, because that is what the download is built from, but this code
+reads and writes them only as bytes you supply. The modems these phones
+call in with are in
 [kl5networks/kl5-modems](https://github.com/kl5networks/kl5-modems).
+
+## How far the Protel builder is proven
+
+A download built from records ExpressNet had saved reproduced a real
+ExpressNet download almost byte for byte.
+Building one from blank records, with no ExpressNet
+anywhere, is untested. The zone-table packer was written from a
+decompile of ExpressNet's own packing code and checked against nine real
+downloads. Treat a field you have not seen work on a board as a guess.
 
 ## How it was worked out
 
 The XNet protocol was read off the line from our own Protel board's
 call-ins. No manual publishes it. Some details were confirmed by running
-the phone's firmware in an emulator; that emulator and the firmware are
+the phone's firmware in an emulator, and the record layouts were mapped
+by changing one field at a time in ExpressNet and comparing the files; that emulator and the firmware are
 not part of this repository. Fields whose meaning is not known are kept as
 raw bytes rather than guessed at.
 

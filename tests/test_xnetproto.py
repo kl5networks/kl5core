@@ -1,8 +1,6 @@
 """XNet framing, the capture reader, the download image, and the replay
 manager -- all pure, all against bytes measured off the board on
 2026-10-01 (numbers and codes replaced; the shapes are the real ones)."""
-import os
-import sys
 import time
 import unittest
 

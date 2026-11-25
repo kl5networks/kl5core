@@ -7,7 +7,6 @@ parsing and rendering it changes NOTHING -- a byte nobody edited that comes
 out different is a phone running a table nobody chose.
 """
 import os
-import sys
 import unittest
 
 
